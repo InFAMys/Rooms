@@ -3,7 +3,7 @@
 
  ## Getting Started
 
- These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+ These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
  ### Prerequisites
 
@@ -12,7 +12,7 @@
  * mysql
  * jsonwbetoken
  * nodemon (Optional)
- * node_modules Folder, in node_modules.rar (Optional)
+ * node_modules Folder (Optional)
  * rooms.sql Database
 
  ### Installing
@@ -38,7 +38,7 @@
  npm install
  ```
  * Import Database (rooms.sql) To Your PhpMyAdmin
- * If You Want To Use My node_modules Folder, Extract Them In Root Directory With index.js, package.json, and package-lock.json
+ * If You Want To Use My node_modules Folder,Move Them Into Root Directory With index.js, package.json, and package-lock.json
 
  ### Running
  * Run With
