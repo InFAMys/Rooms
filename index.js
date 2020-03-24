@@ -24,6 +24,7 @@ db.connect((err) => {
     console.log('Database connected')
 })
 
+/************** JWT USER ***************/
 const isAuthorized = (request, result, next) => {
     if (typeof(request.headers['user-auth']) == 'undefined') {
         return result.status(403).json({
@@ -46,13 +47,15 @@ const isAuthorized = (request, result, next) => {
     next()
 }
 
+/************** HOMEPAGE ***************/
 app.get('/', (request, result) => {
     result.json({
         success: true,
-        message: 'Welcome To Room Booking!'
+        message: 'Welcome!'
     })
 })
 
+/************** REGISTER USER ***************/
 app.post('/register/user', (request, result) => {
     let data = request.body
 
@@ -71,6 +74,7 @@ app.post('/register/user', (request, result) => {
     })
 })
 
+/************** REGISTER PATIENT ***************/
 app.post('/register/patient', isAuthorized, (request, result) => {
     let data = request.body
 
@@ -89,6 +93,7 @@ app.post('/register/patient', isAuthorized, (request, result) => {
     })
 })
 
+/************** LOGIN USER ***************/
 app.post('/login', function(request, result) {
   let data = request.body
 	var email = data.email;
@@ -113,6 +118,7 @@ app.post('/login', function(request, result) {
 	}
 });
 
+/************** GET ALL ROOMS ***************/
 app.get('/rooms', isAuthorized, (req, res) => {
     let sql = `
         select * from room
@@ -129,6 +135,7 @@ app.get('/rooms', isAuthorized, (req, res) => {
     })
 })
 
+/************** GET ROOMS BY ID ***************/
 app.get('/rooms/show/:id', isAuthorized, (req, res) => {
     let sql = `
         select * from room
@@ -146,6 +153,7 @@ app.get('/rooms/show/:id', isAuthorized, (req, res) => {
     })
 })
 
+/************** BOOK ROOMS ***************/
 app.post('/rooms/book/:id', isAuthorized, (req, res) => {
     let data = req.body
 
@@ -169,7 +177,13 @@ app.post('/rooms/book/:id', isAuthorized, (req, res) => {
     })
 })
 
+
+
 //========== ADMIN ==========//
+//========== ADMIN ==========//
+//========== ADMIN ==========//
+
+/************** JWT ADMIN ***************/
 const adminAuth = (request, result, next) => {
     if (typeof(request.headers['admin-auth']) == 'undefined') {
         return result.status(403).json({
@@ -192,6 +206,7 @@ const adminAuth = (request, result, next) => {
     next()
 }
 
+/************** LOGIN ADMIN ***************/
 app.post('/adm/login', function(request, result) {
   let data = request.body
 	var email = data.email;
@@ -216,6 +231,7 @@ app.post('/adm/login', function(request, result) {
 	}
 });
 
+/************** GET ALL ROOMS ***************/
 app.get('/adm/rooms', adminAuth, (req, res) => {
     let sql = `
         select * from room
@@ -232,6 +248,7 @@ app.get('/adm/rooms', adminAuth, (req, res) => {
     })
 })
 
+/************** GET ROOMS BY ID ***************/
 app.get('/adm/rooms/:id', adminAuth, (req, res) => {
     let sql = `
         select * from room
@@ -249,6 +266,7 @@ app.get('/adm/rooms/:id', adminAuth, (req, res) => {
     })
 })
 
+/************** ADD ROOM ***************/
 app.post('/adm/rooms', adminAuth, (request, result) => {
     let data = request.body
 
@@ -267,31 +285,44 @@ app.post('/adm/rooms', adminAuth, (request, result) => {
     })
 })
 
+/************** EMPTY ROOMS ***************/
 app.post('/adm/rooms/empty/:id', adminAuth, (req, res) => {
     let data = req.body
 
     db.query(`
-        insert into history (id_patient, id_room, id_user)
-        values ('`+data.id_user+`', '`+req.params.id+`', '`+data.id_user+`')
-    `, (err, result) => {
-        if (err) throw err
-    })
-
-    db.query(`
-        delete from transaction (id_ts)
-        values ('`+data.id_ts+`')
-        update room
-        set status = 'Occupied'
-        where id_room = '`+req.params.id+`'
+      update room
+      set status = 'Empty'
+      where id_room = '`+req.params.id+`'
     `, (err, result) => {
         if (err) throw err
     })
 
     res.json({
-        message: "Book Success!"
+        message: "Room Emptied!"
     })
 })
 
+/************** UPDATE ROOMS ***************/
+app.put('/adm/rooms/:id', adminAuth, (request, result) => {
+    let data = request.body
+
+    let sql = `
+        update room
+        set name = '`+data.name+`', status = '`+data.status+`'
+        where id_room = `+request.params.id+`
+    `
+
+    db.query(sql, (err, result) => {
+        if (err) throw err
+    })
+
+    result.json({
+        success: true,
+        message: 'Room Succesfully Updated!'
+    })
+})
+
+/************** GET ALL PATIENTS ***************/
 app.get('/adm/patients', adminAuth, (req, res) => {
     let sql = `
         select * from patient
@@ -308,7 +339,61 @@ app.get('/adm/patients', adminAuth, (req, res) => {
     })
 })
 
+/************** GET ALL TRANSACTION ***************/
+app.get('/adm/transaction/all', adminAuth, (req, res) => {
+    let sql = `
+        select * from transaction
+    `
 
+    db.query(sql, (err, result) => {
+        if (err) throw err
+
+        res.json({
+            success: true,
+            message: 'Success retrieve data from database',
+            data: result
+        })
+    })
+})
+
+/************** GET TRANSACTION BY ID ***************/
+app.get('/adm/transaction/:id', adminAuth, (req, res) => {
+    let sql = `
+        select * from transaction
+        where id_ts = `+req.params.id+`
+        limit 1
+    `
+
+    db.query(sql, (err, result) => {
+        if (err) throw err
+
+        res.json({
+            message: "Success Getting Transaction Details",
+            data: result[0]
+        })
+    })
+})
+
+/************** GET TRANSACTION BY USER's ID ***************/
+app.get('/adm/usr/:id/trs', adminAuth, (req, res) => {
+    db.query(`
+        select transaction.id_ts, room.id_room, patient.id_patient
+        from user
+        right join transaction on user.id_user = transaction.id_user
+        right join room on transaction.id_room = room.id_room
+        right join patient on transaction.id_patient = patient.id_patient
+        where user.id_user = '`+req.params.id+`'
+    `, (err, result) => {
+        if (err) throw err
+
+        res.json({
+            message: "Getting Transaction Success!",
+            data: result
+        })
+    })
+})
+
+/************** PORT ***************/
 app.listen(1337, () => {
     console.log('App is running on port 1337!')
 })
