@@ -153,7 +153,7 @@ app.get('/rooms/show/:id', isAuthorized, (req, res) => {
     })
 })
 
-/************** BOOK ROOMS ***************/
+/************** BOOK (POST) ROOMS ***************/
 app.post('/rooms/book/:id', isAuthorized, (req, res) => {
     let data = req.body
 
@@ -267,7 +267,7 @@ app.get('/adm/rooms/:id', adminAuth, (req, res) => {
 })
 
 /************** ADD ROOM ***************/
-app.post('/adm/rooms', adminAuth, (request, result) => {
+app.post('/adm/rooms/add', adminAuth, (request, result) => {
     let data = request.body
 
     let sql = `
@@ -286,7 +286,7 @@ app.post('/adm/rooms', adminAuth, (request, result) => {
 })
 
 /************** EMPTY ROOMS ***************/
-app.post('/adm/rooms/empty/:id', adminAuth, (req, res) => {
+app.post('/adm/rooms/:id/empty', adminAuth, (req, res) => {
     let data = req.body
 
     db.query(`
@@ -392,6 +392,66 @@ app.get('/adm/usr/:id/trs', adminAuth, (req, res) => {
         })
     })
 })
+
+/************** REGISTER PATIENT (ADMIN) ***************/
+app.post('/adm/register/patient', adminAuth, (request, result) => {
+    let data = request.body
+
+    let sql = `
+        insert into patient (name, age, disease)
+        values ('`+data.name+`', '`+data.age+`', '`+data.disease+`');
+    `
+
+    db.query(sql, (err, result) => {
+        if (err) throw err
+    })
+
+    result.json({
+        success: true,
+        message: 'Patient Succesfully Registered!'
+    })
+})
+
+/************** BOOK (POST) ROOMS ***************/
+app.post('/adm/rooms/book/:id', adminAuth, (req, res) => {
+    let data = req.body
+
+    db.query(`
+        insert into ts_admin (id_patient, id_room, id_admin)
+        values ('`+data.id_patient+`', '`+req.params.id+`', '`+data.id_admin+`')
+    `, (err, result) => {
+        if (err) throw err
+    })
+
+    db.query(`
+        update room
+        set status = 'Occupied'
+        where id_room = '`+req.params.id+`'
+    `, (err, result) => {
+        if (err) throw err
+    })
+
+    res.json({
+        message: "Book Success!"
+    })
+})
+
+/************** DELETE ROOM BY ID ***************/
+app.delete('/adm/rooms/:id/delete', adminAuth, (request, result) => {
+    let sql = `
+        delete from room where id_room = `+request.params.id+`
+    `
+
+    db.query(sql, (err, res) => {
+        if (err) throw err
+    })
+
+    result.json({
+        success: true,
+        message: 'Room deleted!'
+    })
+})
+
 
 /************** PORT ***************/
 app.listen(1337, () => {
