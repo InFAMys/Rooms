@@ -333,8 +333,26 @@ app.get('/adm/patients', adminAuth, (req, res) => {
 
         res.json({
             success: true,
-            message: 'Success retrieve data from database',
+            message: 'Success Retrieving all patients!',
             data: result
+        })
+    })
+})
+
+/************** GET PATIENT BY ID ***************/
+app.get('/adm/patient/:id', adminAuth, (req, res) => {
+    let sql = `
+        select * from patient
+        where id_patient = `+req.params.id+`
+        limit 1
+    `
+
+    db.query(sql, (err, result) => {
+        if (err) throw err
+
+        res.json({
+            message: "Success Getting Patient Details",
+            data: result[0]
         })
     })
 })
