@@ -159,7 +159,7 @@ app.post('/rooms/book/:id', isAuthorized, (req, res) => {
 
     db.query(`
         insert into transaction (id_patient, id_room, id_user)
-        values ('`+data.id_user+`', '`+req.params.id+`', '`+data.id_user+`')
+        values ('`+data.id_patient+`', '`+req.params.id+`', '`+data.id_user+`')
     `, (err, result) => {
         if (err) throw err
     })
